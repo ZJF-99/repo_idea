@@ -1,15 +1,15 @@
 package com.lagou.service.impl;
 
 import com.lagou.dao.RoleMapper;
-import com.lagou.domain.Role;
-import com.lagou.domain.RoleMenuVo;
-import com.lagou.domain.Role_menu_relation;
+import com.lagou.domain.*;
 import com.lagou.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class RoleServiceImpl implements RoleService {
@@ -67,6 +67,56 @@ public class RoleServiceImpl implements RoleService {
 
         roleMapper.deleteRole(roleId);
 
+
+    }
+
+
+    /**
+     * 添加& 修改资源分类接口（获取当前角色拥有的 资源信息）
+     */
+    @Override
+    public ResponseResult findResourceListByRoleId(Integer roleId) {
+
+        //1.查询当前角色拥有的资源分类信息
+        List<ResourceCategory> category = roleMapper.findResourceCategoryListByRoleId(roleId);
+
+        //2.查询封装资源分类信息关联的资源信息
+        for (ResourceCategory resourceCategory : category) {
+            List<Resource> resource = roleMapper.findResourceByCategoryId(resourceCategory.getId());
+            resourceCategory.setResourceList(resource);
+        }
+
+
+        return new ResponseResult(true,200,"获取当前角色拥有的资源信息成功",category);
+    }
+
+
+    /**
+     * 为角色分配资源
+     */
+    @Override
+    public void roleContextResource(RoleResourceVo roleResourceVo) {
+
+        //1. 根据角色ID清空中间表关联关系
+        roleMapper.deleteRoleResourceRelation(roleResourceVo.getRoleId());
+
+        //2.再重新建立关联关系
+        for (Integer resourceId : roleResourceVo.getResourceIdList()) {
+
+            //封装数据
+            RoleResourceRelation roleResourceRelation = new RoleResourceRelation();
+            roleResourceRelation.setRoleId(roleResourceVo.getRoleId());
+            roleResourceRelation.setResourceId(resourceId);
+
+            Date date = new Date();
+            roleResourceRelation.setCreatedTime(date);
+            roleResourceRelation.setUpdatedTime(date);
+
+            roleResourceRelation.setCreatedBy("system");
+            roleResourceRelation.setUpdatedBy("system");
+
+            roleMapper.roleContextResource(roleResourceRelation);
+        }
 
     }
 

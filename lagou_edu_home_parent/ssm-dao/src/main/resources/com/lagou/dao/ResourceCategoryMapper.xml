@@ -9,4 +9,38 @@
         select * from resource_category
     </select>
 
+
+    <!--添加资源分类-->
+    <insert id="saveResourceCategory" parameterType="com.lagou.domain.ResourceCategory">
+    insert into resource_category (id,name,sort,created_time,updated_time,created_by,updated_by)
+values (null,#{name},#{sort},#{createdTime},#{updatedTime},#{createdBy},#{updatedBy});
+    </insert>
+
+    <!--修改资源分类-->
+    <update id="updateResourceCategory" parameterType="com.lagou.domain.ResourceCategory">
+        update resource_category
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name != null and name != ''">
+            name = #{name},
+            </if>
+            <if test="sort != null and sort != '' or sort == 0">
+            sort = #{sort},
+            </if>
+            <if test="updatedTime != null">
+            updated_time = #{updatedTime},
+            </if>
+            <if test="updatedBy != null">
+            updated_by = #{updatedBy}
+            </if>
+        </trim>
+        <where>
+            <if test="id != null and id != ''">id = #{id}</if>
+        </where>
+    </update>
+
+    <!--删除资源分类-->
+    <delete id="deleteResourceCategory" parameterType="int">
+        delete from resource_category where id = #{id}
+    </delete>
+
 </mapper>
